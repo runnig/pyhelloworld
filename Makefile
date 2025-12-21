@@ -27,7 +27,7 @@ test:
 
 # Run the main script
 run:
-	uv run python -m pyhelloworld.pyhelloworld
+	uv run pyhelloworld --data-path ./data/data.txt
 
 # Lint code
 lint:

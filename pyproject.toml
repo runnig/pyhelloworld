@@ -15,7 +15,7 @@ build-backend = "hatchling.build"
 packages = ["src/pyhelloworld"]
 
 [project.scripts]
-pyhelloworld = "pyhelloworld.pyhelloworld:main"
+pyhelloworld = "pyhelloworld.pyhelloworld:cli"
 
 
 [dependency-groups]
