@@ -13,4 +13,5 @@
 * Invoke the pytest directly for a concrete test file:
   "uv run pytest -x -n 1 -v -s tests/path/to/test_mycode.py"
 * Run pre‑commit hooks (lint, type checking, etc.): "make lint"
+* Type checking only: "make typecheck"
 * Auto‑format code with ruff: "make format"

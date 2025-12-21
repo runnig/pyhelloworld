@@ -32,10 +32,15 @@ run:
 # Lint code
 lint:
 	uv run ruff check src/ tests/
+	uv run basedpyright src/ tests/
 
 # Format code
 format:
 	uv run ruff format src/ tests/
+
+# Type check code
+typecheck:
+	uv run basedpyright src/ tests/
 
 # Clean build artifacts
 clean:

@@ -23,7 +23,7 @@ dev = [
     "pytest",
     "pytest-asyncio",
     "ruff",
-    "mypy",
+    "basedpyright",
     "pre-commit"
 ]
 
@@ -34,3 +34,17 @@ exclude = [".venv"]
 
 [tool.ruff.lint]
 extend-select = ["I"]
+
+[tool.basedpyright]
+# Type checking mode (equivalent to mypy --strict)
+typeCheckingMode = "standard"
+# Python version target
+pythonVersion = "3.13"
+# Include source directories
+include = ["src", "tests"]
+# Exclude virtual environment
+exclude = [".venv"]
+# Report unused imports
+reportUnusedImport = true
+# Don't require type annotations for test fixtures
+reportUnknownParameterType = false
