@@ -7,7 +7,8 @@
 * IMPORTANT: source .venv/bin/activate activates the virtual environment
 * IMPORTANT: check the virtual environment has been activated:
   "echo $VIRTUAL_ENV"
-* Run "make install" to install dependencies
+* Run "make sync" to install dependencies
+* Run "make sync all" to install all dependencies, including development (pytest, ruff)
 * Run all tests: "make test"
 * Invoke the pytest directly for a concrete test file:
   "uv run pytest -x -n 1 -v -s tests/path/to/test_mycode.py"

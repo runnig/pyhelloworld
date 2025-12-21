@@ -7,5 +7,6 @@ def test_main(capsys):
     captured = capsys.readouterr()
     assert captured.out == "Hello from pyhelloworld!\n"
 
+
 def test_health():
     assert "ok" == pyhelloworld.health()

@@ -1,11 +1,11 @@
-.PHONY: help install install-all test run lint format clean build
+.PHONY: help sync sync-all test run lint format clean build
 
 
 # Default target
 help:
 	@echo "Available commands:"
-	@echo "  install     Install the package"
-	@echo "  install-all Install development dependencies"
+	@echo "  sync     sync the package"
+	@echo "  sync-all sync development dependencies"
 	@echo "  test        Run tests"
 	@echo "  run         Run the main script"
 	@echo "  lint        Run linting"
@@ -13,12 +13,12 @@ help:
 	@echo "  clean       Clean build artifacts"
 	@echo "  build       Build the package"
 
-# Install the package and dependencies
-install:
+# sync the package and dependencies
+sync:
 	uv sync
 
-# Install development dependencies
-install-all:
+# sync development dependencies
+sync-all:
 	uv sync --all-groups
 
 # Run tests
