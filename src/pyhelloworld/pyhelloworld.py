@@ -1,8 +1,10 @@
-def health():
+def health() -> str:
+    """Return health check status."""
     return "ok"
 
 
-def main():
+def main() -> None:
+    """Print greeting message."""
     print("Hello from pyhelloworld!")
 
 
