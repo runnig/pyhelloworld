@@ -7,6 +7,7 @@ def health() -> str:
     """Return health check status."""
     return "ok"
 
+
 def main(args: argparse.Namespace) -> None:
     """Print greeting message.
 
@@ -21,7 +22,9 @@ def main(args: argparse.Namespace) -> None:
 def cli() -> None:
     """Command line interface."""
     parser = argparse.ArgumentParser(description="Hello World Application")
-    parser.add_argument("--data-path", type=str, required=True, help="path to the data.txt")
+    parser.add_argument(
+        "--data-path", type=str, required=True, help="path to the data.txt"
+    )
     args = parser.parse_args(sys.argv[1:])
     main(args)
 
