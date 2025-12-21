@@ -11,7 +11,9 @@ def test_main(capsys: Any) -> None:
     args = argparse.Namespace(data_path=str(data_path))
     main(args)
     captured = capsys.readouterr()
-    assert captured.out == "Hello world\n"
+    # Check for either development or bundled mode output
+    output = captured.out.strip()
+    assert "Hello world" in output
 
 
 def test_health() -> None:

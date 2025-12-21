@@ -24,7 +24,8 @@ dev = [
     "pytest-asyncio",
     "ruff",
     "basedpyright",
-    "pre-commit"
+    "pre-commit",
+    "pyinstaller>=6.0.0",
 ]
 
 [tool.ruff]
@@ -48,3 +49,4 @@ exclude = [".venv"]
 reportUnusedImport = true
 # Don't require type annotations for test fixtures
 reportUnknownParameterType = false
+
