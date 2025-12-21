@@ -1,3 +1,6 @@
+def health():
+    return "ok"
+
 def main():
     print("Hello from pyhelloworld!")
 

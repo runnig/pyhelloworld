@@ -7,12 +7,6 @@ requires-python = ">=3.13"
 dependencies = [
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=9.0.2",
-    "ruff>=0.14.10",
-]
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -22,3 +16,21 @@ packages = ["src/pyhelloworld"]
 
 [project.scripts]
 pyhelloworld = "pyhelloworld.pyhelloworld:main"
+
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
+    "mypy",
+    "pre-commit"
+]
+
+[tool.ruff]
+line-length = 80
+indent-width = 4
+exclude = [".venv"]
+
+[tool.ruff.lint]
+extend-select = ["I"]

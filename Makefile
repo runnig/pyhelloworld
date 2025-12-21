@@ -23,7 +23,7 @@ install-all:
 
 # Run tests
 test:
-	uv run pytest testing/ -v
+	uv run pytest tests/ -v
 
 # Run the main script
 run:
@@ -31,11 +31,11 @@ run:
 
 # Lint code
 lint:
-	uv run ruff check src/ testing/
+	uv run ruff check src/ tests/
 
 # Format code
 format:
-	uv run ruff format src/ testing/
+	uv run ruff format src/ tests/
 
 # Clean build artifacts
 clean:
