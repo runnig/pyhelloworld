@@ -31,22 +31,16 @@ def test_bundled_executable_output() -> None:
     if platform.system() != "Windows":
         pytest.skip("Test only runs on Windows")
 
-    # Define the executable path (onedir mode: dist/pyhelloworld/pyhelloworld.exe)
-    exe_path = (
-        Path(__file__).parent.parent.parent
-        / "dist"
-        / "pyhelloworld"
-        / "pyhelloworld.exe"
-    )
+    # Define the executable path (onefile mode: dist/pyhelloworld.exe)
+    exe_path = Path(__file__).parent.parent.parent / "dist" / "pyhelloworld.exe"
 
     # Skip if executable doesn't exist
     if not exe_path.exists():
         pytest.skip(f"Executable not found at {exe_path}")
 
-    # Run the executable from its directory
+    # Run the executable
     result = subprocess.run(
         [str(exe_path), "--data-path", "data.txt"],
-        cwd=str(exe_path.parent),
         capture_output=True,
         text=True,
         check=True,

@@ -5,9 +5,8 @@
 !define APP_NAME "HelloWorld"
 !define APP_VERSION "0.1.0"
 !define APP_PUBLISHER "pyhelloworld"
-!define APP_URL "https://github.com/pyhelloworld"
+!define APP_URL "https://github.com/runnig/pyhelloworld"
 !define APP_EXECUTABLE "pyhelloworld.exe"
-!define APP_OUTPUT_FILE "pyhelloworld-${APP_VERSION}-setup.exe"
 
 ; Default installation directory
 InstallDir "$PROGRAMFILES\${APP_NAME}"
@@ -29,32 +28,34 @@ UninstPage instfiles
 ; License file
 LicenseData "..\LICENSE"
 
+; Output file
+OutFile "..\dist\pyhelloworld-installer.exe"
+
 ; Language
 
 ; Installer Sections
 Section "Main Application" SecMain
     SectionIn RO
-    
+
     SetOutPath "$INSTDIR"
-    
-    ; Copy all files from the PyInstaller build directory
-    SetOutPath "$INSTDIR"
-    File /r "dist\pyhelloworld"
-    
+
+    ; Copy the single PyInstaller executable
+    File "..\dist\pyhelloworld.exe"
+
     ; Create uninstaller
     WriteUninstaller "$INSTDIR\Uninstall.exe"
-    
+
     ; Add installation information to registry
     WriteRegStr HKLM "Software\${APP_NAME}" "InstallPath" "$INSTDIR"
     WriteRegStr HKLM "Software\${APP_NAME}" "Version" "${APP_VERSION}"
-    
+
     ; Add uninstaller to Add/Remove Programs
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "DisplayName" "${APP_NAME}"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "DisplayVersion" "${APP_VERSION}"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "Publisher" "${APP_PUBLISHER}"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "URLInfoAbout" "${APP_URL}"
-    
+
 SectionEnd
 
 Section "Start Menu Shortcuts" SecShortcuts
@@ -72,14 +73,14 @@ Section "Uninstall"
     ; Remove files and directories
     RMDir /r "$INSTDIR\*.*"
     RMDir "$INSTDIR"
-    
+
     ; Remove shortcuts
     Delete "$SMPROGRAMS\${APP_NAME}\*.*"
     RMDir "$SMPROGRAMS\${APP_NAME}"
     Delete "$DESKTOP\${APP_NAME}.lnk"
-    
+
     ; Remove registry entries
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
     DeleteRegKey HKLM "Software\${APP_NAME}"
-    
+
 SectionEnd
