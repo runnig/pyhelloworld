@@ -6,6 +6,7 @@ function Show-Help {
     Write-Host "Available commands:"
     Write-Host "  windows-installer  Create Windows installer (builds executable if needed)"
     Write-Host "  windows-install  Install Windows application to target directory"
+    Write-Host "  windows-test-install  Install and test Windows application"
     Write-Host "  windows-run    Run installed Windows application and verify output"
     Write-Host "  windows-all    Complete Windows build and installer"
 }
@@ -108,143 +109,58 @@ function Invoke-WindowsInstaller {
     Write-Host "Created: $($installerFileObj.LastWriteTime)"
 }
 
-function Invoke-WindowsInstall {
+function Invoke-WindowsTestInstall {
     param(
         [string]$InstallDir = (Join-Path $env:TEMP "pyhelloworld-test")
     )
 
-    $installerPath = "dist\pyhelloworld-installer.exe"
+    Write-Host "Running full installation test..."
 
-    # Check if installer exists, build if needed
-    if (-not (Test-Path $installerPath)) {
-        Write-Host "Installer not found at $installerPath. Creating installer first..."
-        Invoke-WindowsInstaller
-    } else {
-        Write-Host "Using existing installer: $installerPath"
-    }
+    # First, ensure installation
+    Invoke-WindowsInstall -InstallDir $InstallDir
 
-    # Create installation directory if it doesn't exist
-    if (-not (Test-Path $InstallDir)) {
-        Write-Host "Creating installation directory: $InstallDir"
-        New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
-    }
-
-    Write-Host "Starting unattended installation to: $InstallDir"
-    Write-Host "Installer: $installerPath"
-
-    try {
-        # Run unattended installation
-        $installArgs = @("/S", "/D=$InstallDir")
-        $installProcess = Start-Process -FilePath $installerPath -ArgumentList $installArgs -Wait -PassThru
-
-        if ($installProcess.ExitCode -eq 0) {
-            Write-Host "[v] Installation completed successfully"
-
-            # Verify installation
-            $exePath = Join-Path $InstallDir "pyhelloworld.exe"
-
-            if (Test-Path $exePath) {
-                Write-Host "[v] Verification: Executable found at $exePath"
-
-                # Check registry entry
-                $regPath = "HKLM:\Software\HelloWorld"
-                if (Test-Path $regPath) {
-                    $regInstallPath = (Get-ItemProperty -Path $regPath -Name "InstallPath").InstallPath
-                    Write-Host "[v] Verification: Registry entry found: $regInstallPath"
-                }
-
-                Write-Host "Installation verified successfully!"
-            } else {
-                Write-Host "[x] Warning: Executable not found at expected location: $exePath"
-                exit 1
-            }
-        } else {
-            Write-Host "[x] Installation failed with exit code: $($installProcess.ExitCode)"
-            exit 1
-        }
-    } catch {
-        Write-Host "[x] Error during installation: $_"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "[x] Installation failed, cannot test"
         exit 1
     }
-}
 
-function Invoke-WindowsRun {
-    param(
-        [string]$InstallDir = (Join-Path $env:TEMP "pyhelloworld-test")
-    )
-
+    # Test installed executable
     $exePath = Join-Path $InstallDir "pyhelloworld.exe"
 
-    # Verify executable exists, fallback to dist if not installed
     if (-not (Test-Path $exePath)) {
-        Write-Host "[!] Warning: Installed executable not found at $exePath"
-        $fallbackExe = "dist\pyhelloworld.exe"
-
-        if (Test-Path $fallbackExe) {
-            Write-Host "[*] Using fallback executable from: $fallbackExe"
-            $exePath = $fallbackExe
-            $exeDir = Split-Path -Parent $exePath
-        } else {
-            Write-Host "[x] Error: No executable found at installed location or fallback"
-            Write-Host "Run 'make windows-install' first to install the application."
-            exit 1
-        }
-    } else {
-        $exeDir = Split-Path -Parent $exePath
-    }
-
-    Write-Host "Running application from: $exePath"
-    Write-Host "Working directory: $exeDir"
-    Write-Host "Command: $exePath --data-path data.txt"
-    Write-Host "--- Output ---"
-
-    try {
-        # Run installed application and capture output
-        $currentDir = Get-Location
-        Set-Location $exeDir
-        $output = & $exePath --data-path data.txt 2>&1
-        Set-Location $currentDir
-
-        Write-Host $output
-
-        # Verify output contains expected content
-        if ($output -match "Hello world") {
-            Write-Host "--- Verification ---"
-            Write-Host "[v] SUCCESS: Application output verified correctly"
-            Write-Host "[v] Data file is accessible"
-            Write-Host "[v] Bundled application is functioning"
-
-            # Check if running from bundled application
-            if ($output -match "bundled application") {
-                Write-Host "[v] Application correctly detected bundled mode"
-            }
-
-            exit 0
-        } else {
-            Write-Host "--- Verification ---"
-            Write-Host "[x] FAILURE: Expected output not found"
-            Write-Host "Expected to contain: 'Hello world'"
-            Write-Host "Actual output: '$output'"
-            exit 1
-        }
-
-    } catch {
-        Write-Host "[x] Error running application: $_"
+        Write-Host "[x] Executable not found: $exePath"
         exit 1
     }
-}
 
-function Invoke-WindowsAll {
-    Invoke-WindowsInstaller
-    Write-Host "Windows build complete!"
-    Write-Host "Executable: dist\pyhelloworld.exe"
-    Write-Host "Installer: dist\pyhelloworld-installer.exe"
-}
+    Write-Host "Testing installed executable..."
+    $output = & $exePath --data-path data.txt 2>&1
 
-# Main execution
-switch ($Target.ToLower()) {
-    "help" { Show-Help }
-    "windows-installer" { Invoke-WindowsInstaller }
+    if ($output -match "Hello world") {
+        Write-Host "[v] Executable runs correctly"
+        Write-Host "Output: $output"
+
+        # Verify data.txt is bundled correctly
+        if ($output -match "bundled application") {
+            Write-Host "[v] Data file accessible in bundled mode"
+        }
+    } else {
+        Write-Host "[x] Executable failed to run or wrong output"
+        Write-Host "Expected: 'Hello world'"
+        Write-Host "Got: $output"
+        exit 1
+    }
+
+    # Verify all components
+    Write-Host "Verifying installed components..."
+
+    # Check executable
+    if (Test-Path $exePath) {
+        Write-Host "[v] Executable installed"
+    } else {
+        Write-Host "[x] Executable missing"
+        exit 1
+    }
+    "windows-test-install" { Invoke-WindowsTestInstall }
     "windows-install" {
         $installDir = $env:INSTALL_DIR
         if ($installDir) {
@@ -264,6 +180,28 @@ switch ($Target.ToLower()) {
         }
     }
     "windows-all" { Invoke-WindowsAll }
+    default {
+        Write-Host "Unknown target: $Target"
+        Show-Help
+        exit 1
+    }
+}
+
+    # Check registry
+
+# Main execution
+switch ($Target.ToLower()) {
+    "help" { Show-Help }
+    "windows-installer" { Invoke-WindowsInstaller }
+    "windows-install" {
+        $installDir = $env:INSTALL_DIR
+        if ($installDir) {
+            Invoke-WindowsInstall -InstallDir $installDir
+        } else {
+            Invoke-WindowsInstall
+        }
+    }
+    "windows-test-install" { Invoke-WindowsTestInstall }
     default {
         Write-Host "Unknown target: $Target"
         Show-Help

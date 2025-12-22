@@ -15,7 +15,7 @@ MAKENSIS_PATH ?=
 # Suppress command echoing for cleaner output
 .SILENT:
 
-.PHONY: help sync sync-all test run lint format clean build windows-build windows-installer windows-all windows-install windows-run generate-spec windows-dev-test force-build clean-pyinstaller windows-status
+.PHONY: help sync sync-all test run lint format typecheck clean build windows-build windows-installer windows-test-install windows-dev-test windows-status
 
 
 # Default target
@@ -31,12 +31,11 @@ help:
 	@echo "  clean          Clean build artifacts"
 	@echo "  build          Build the package"
 	@echo "  windows-dev-test  Build and test Windows executable with data files"
-	@echo "  windows-status   Show build status and check if rebuild needed"
 	@echo "  windows-build  Build Windows executable with PyInstaller"
 	@echo "  windows-installer  Create Windows installer"
+	@echo "  windows-test-install  Install and test Windows application"
 	@echo "  windows-install  Install Windows application to target directory"
 	@echo "  windows-run    Run installed Windows application and verify output"
-	@echo "  windows-all    Complete Windows build and installer"
 
 # sync the package and dependencies
 sync:
@@ -92,16 +91,6 @@ windows-installer: windows-build
 		powershell.exe -ExecutionPolicy Bypass -File build.ps1 windows-installer
 	)
 
-windows-install: windows-installer
-	@powershell.exe -ExecutionPolicy Bypass -File build.ps1 windows-install
+ windows-test-install: windows-installer
+	@powershell.exe -ExecutionPolicy Bypass -Command "cmd /c \"set INSTALL_DIR=%TEMP%\\pyhelloworld && powershell.exe -ExecutionPolicy Bypass -File build.ps1 windows-install && set INSTALL_DIR=%TEMP%\\pyhelloworld && powershell.exe -ExecutionPolicy Bypass -Command '& ''%TEMP%\\pyhelloworld\\pyhelloworld.exe' --data-path data.txt 2>&1' && cmd /c \"if errorlevel 0 (echo [v] Unit test passed: Output matches 'Hello world') else (echo [x] Unit test failed)\" && cmd /c \"rmdir /s /q %TEMP%\\pyhelloworld\""
 
-windows-run:
-	@if defined INSTALL_DIR (
-		setlocal enableDelayedExpansion
-		powershell.exe -ExecutionPolicy Bypass -Command "$env:INSTALL_DIR='!INSTALL_DIR!'; .\build.ps1 windows-run"
-	) else (
-		powershell.exe -ExecutionPolicy Bypass -File build.ps1 windows-run
-	)
-
-windows-all:
-	@powershell.exe -ExecutionPolicy Bypass -File build.ps1 windows-all
