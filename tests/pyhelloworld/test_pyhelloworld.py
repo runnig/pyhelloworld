@@ -1,4 +1,5 @@
 import argparse
+import os
 import platform
 import subprocess
 from pathlib import Path
@@ -37,6 +38,37 @@ def test_bundled_executable_output() -> None:
     # Skip if executable doesn't exist
     if not exe_path.exists():
         pytest.skip(f"Executable not found at {exe_path}")
+
+    # Run the executable
+    result = subprocess.run(
+        [str(exe_path), "--data-path", "data.txt"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    # Get the first line of output
+    output_lines = result.stdout.strip().split("\n")
+    first_line = output_lines[0]
+
+    # Assert the first line is exactly "Hello world"
+    assert first_line == "Hello world", (
+        f"Expected 'Hello world', got: {first_line}"
+    )
+
+
+def test_installed_executable_output() -> None:
+    """Test that the NSIS-installed executable outputs 'Hello world'."""
+    # Skip on non-Windows platforms
+    if platform.system() != "Windows":
+        pytest.skip("Test only runs on Windows")
+
+    # Define the installed executable path
+    exe_path = Path(os.environ["TEMP"]) / "pyhelloworld" / "pyhelloworld.exe"
+
+    # Skip if executable doesn't exist
+    if not exe_path.exists():
+        pytest.skip(f"Installed executable not found at {exe_path}")
 
     # Run the executable
     result = subprocess.run(

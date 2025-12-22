@@ -91,6 +91,5 @@ windows-installer: windows-build
 		powershell.exe -ExecutionPolicy Bypass -File build.ps1 windows-installer
 	)
 
- windows-test-install: windows-installer
-	@powershell.exe -ExecutionPolicy Bypass -Command "cmd /c \"set INSTALL_DIR=%TEMP%\\pyhelloworld && powershell.exe -ExecutionPolicy Bypass -File build.ps1 windows-install && set INSTALL_DIR=%TEMP%\\pyhelloworld && powershell.exe -ExecutionPolicy Bypass -Command '& ''%TEMP%\\pyhelloworld\\pyhelloworld.exe' --data-path data.txt 2>&1' && cmd /c \"if errorlevel 0 (echo [v] Unit test passed: Output matches 'Hello world') else (echo [x] Unit test failed)\" && cmd /c \"rmdir /s /q %TEMP%\\pyhelloworld\""
-
+windows-test-install: $(INSTALLER_OUTPUT)
+	@powershell.exe -ExecutionPolicy Bypass -File build.ps1 windows-test-install
