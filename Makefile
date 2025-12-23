@@ -15,7 +15,7 @@ MAKENSIS_PATH ?=
 # Suppress command echoing for cleaner output
 .SILENT:
 
-.PHONY: help sync sync-all test run lint format typecheck clean build-scripts windows-compile windows-installer windows-run-installer-test windows-test-installed
+.PHONY: help sync sync-all test run lint format typecheck clean build-scripts windows-compile windows-build-installer-admin windows-build-installer-test windows-test-installed
 
 
 # Default target
@@ -32,8 +32,9 @@ help:
 	@echo "  build          Build the package"
 	@echo "  windows-compile  Build a Windows executable with PyInstaller"
 	@echo "  windows-test-compiled  Test if compiled exe is runnable"
-	@echo "  windows-installer  Create Windows installer (admin-level, HKLM registry)"
-	@echo "  windows-run-installer-test  Create test installer (user-level, no UAC, HKCU registry)"
+	@echo "  windows-build-installer-admin  Create Windows installer (admin-level, HKLM registry)"
+	@echo "  windows-build-installer-test  Create test installer (user-level, no UAC, HKCU registry)"
+	@echo "  windows-run-installer-test  Install test installer silently to TEMP directory"
 	@echo "  windows-test-installed  Install test installer silently to TEMP directory"
 
 # sync the package and dependencies
@@ -85,14 +86,17 @@ windows-compile: $(COMPILED_EXE)
 windows-test-compiled: $(COMPILED_EXE)
 	uv run pytest -x -s -v tests/test_compiled.py
 
-windows-installer: $(COMPILED_EXE) build-scripts
+windows-build-installer-admin: $(COMPILED_EXE) build-scripts
 	uv run build-installer
 
 $(INSTALLER_EXE): $(COMPILED_EXE)
-	make windows-installer
+	make windows-build-installer-admin
 
-windows-run-installer-test: $(COMPILED_EXE) build-scripts
+windows-build-installer-test: $(COMPILED_EXE) build-scripts
 	uv run build-installer --test
 
-windows-test-installed: windows-run-installer-test
+windows-run-installer-test: windows-build-installer-test build-scripts
+	uv run windows-test-install
+
+windows-test-installed: windows-build-installer-test
 	uv run pytest -x -s -v tests/test_installed.py

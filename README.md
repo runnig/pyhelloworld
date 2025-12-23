@@ -24,7 +24,7 @@ Building the Windows installer requires [NSIS (Nullsoft Scriptable Install Syste
 If `makensis.exe` is in your system PATH, you can build the installer directly:
 
 ```bash
-make windows-installer
+make windows-build-installer-admin
 ```
 
 If `makensis.exe` is installed in a custom location (not in PATH), set `MAKENSIS_PATH`:
@@ -32,10 +32,10 @@ If `makensis.exe` is installed in a custom location (not in PATH), set `MAKENSIS
 ```bash
 # For g:\nsis (example)
 set MAKENSIS_PATH=g:\nsis\makensis.exe
-make windows-installer
+make windows-build-installer-admin
 
 # Or in one command:
-MAKENSIS_PATH=g:\nsis\makensis.exe make windows-installer
+MAKENSIS_PATH=g:\nsis\makensis.exe make windows-build-installer-admin
 ```
 
 **Example installations:**
@@ -53,14 +53,17 @@ make windows-compile
 # dist\pyhelloworld.exe outputs the correct string
 make windows-test-compled
 
-# Build Windows installer (admin-level, HKLM registry, requires NSIS 3.11+)
-# Runs NSIS (makensis.exe). Outputs dist\pyhelloworld-installer.exe
-make windows-installer
+ # Build Windows installer (admin-level, HKLM registry, requires NSIS 3.11+)
+ # Runs NSIS (makensis.exe). Outputs dist\pyhelloworld-installer.exe
+ make windows-build-installer-admin
 
-# Builds a user-level test installer.
-# Does not require Admin to install:
-# no UAC, HKCU registry, requires NSIS 3.11+
-make windows-run-installer-test
+ # Builds a user-level test installer.
+ # Does not require Admin to install:
+ # no UAC, HKCU registry, requires NSIS 3.11+
+ make windows-build-installer-test
+
+ # Runs test installer silently
+ make windows-run-installer-test
 
 # Runs the installed binary and checks the output
 make windows-test-installed
