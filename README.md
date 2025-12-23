@@ -12,7 +12,7 @@ uv venv
 .venv\Scripts\activate.bat
 
 # install dependencies
-make sync
+make sync-all
 ```
 
 ## Windows Installer
@@ -46,19 +46,25 @@ MAKENSIS_PATH=g:\nsis\makensis.exe make windows-installer
 ### Build Commands
 ```bash
 # Build Windows executable
+# Runs Pyinstaller. Outputs dist\pyhelloworld.exe
 make windows-compile
 
+# Runs a Python test to verify that the built executable
+# dist\pyhelloworld.exe outputs the correct string
+make windows-test-compled
+
 # Build Windows installer (admin-level, HKLM registry, requires NSIS 3.11+)
+# Runs NSIS (makensis.exe). Outputs dist\pyhelloworld-installer.exe
 make windows-installer
 
-# Build test installer (user-level, no UAC, HKCU registry, requires NSIS 3.11+)
+# Builds a user-level test installer.
+# Does not require Admin to install:
+# no UAC, HKCU registry, requires NSIS 3.11+
 make windows-run-installer-test
 
-# Install test installer silently to TEMP directory
+# Runs the installed binary and checks the output
 make windows-test-installed
 
-# Run pytest tests on installed executable
-make windows-test-install
 ```
 
 ### Version Requirements
@@ -69,19 +75,13 @@ The installer build requires NSIS version 3.11 or higher. The script will automa
 
 To avoid setting `MAKENSIS_PATH` every time, you can add NSIS to your system PATH:
 
-**PowerShell (temporary):**
-```powershell
-$env:PATH += ";g:\nsis"
-```
-
-**PowerShell (permanent):**
+**Control Panel**
 Add to your user or system environment variables in Control Panel.
 
 **Command Prompt (temporary):**
 ```cmd
 set PATH=%PATH%;g:\nsis
 ```
-
 
 
 ## Linux install
@@ -96,5 +96,8 @@ uv venv
 .venv/bin/activate
 
 # install dependencies
-make sync
+make sync-all
 ```
+
+**Warning**: PyInstaller only builds the "native" binaries;
+if Pyinstaller has built a binary on Linux, it won't run on Windows.
