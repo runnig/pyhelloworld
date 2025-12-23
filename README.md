@@ -44,16 +44,21 @@ MAKENSIS_PATH=g:\nsis\makensis.exe make windows-installer
 - **Custom**: `C:\tools\nsis\makensis.exe` → `set MAKENSIS_PATH=C:\tools\nsis\makensis.exe`
 
 ### Build Commands
-
 ```bash
 # Build Windows executable
-make windows-build
+make windows-compile
 
-# Build Windows installer (requires NSIS 3.11+)
+# Build Windows installer (admin-level, HKLM registry, requires NSIS 3.11+)
 make windows-installer
 
-# Build everything
-make windows-all
+# Build test installer (user-level, no UAC, HKCU registry, requires NSIS 3.11+)
+make windows-run-installer-test
+
+# Install test installer silently to TEMP directory
+make windows-test-installed
+
+# Run pytest tests on installed executable
+make windows-test-install
 ```
 
 ### Version Requirements

@@ -1,5 +1,7 @@
 ; NSIS script for pyhelloworld Windows installer
 ; Basic installer without Modern UI to avoid icon issues
+; Set TEST_MODE=1 when compiling for test mode (user-level, no UAC)
+; Example: makensis /DTEST_MODE=1 pyhelloworld.nsi
 
 ; Define application metadata
 !define APP_NAME "HelloWorld"
@@ -8,14 +10,20 @@
 !define APP_URL "https://github.com/runnig/pyhelloworld"
 !define APP_EXECUTABLE "pyhelloworld.exe"
 
+; Registry hive - compile-time decision based on TEST_MODE
+!ifdef TEST_MODE
+    !define REGISTRY_HIVE "HKCU"
+    RequestExecutionLevel user
+!else
+    !define REGISTRY_HIVE "HKLM"
+    RequestExecutionLevel admin
+!endif
+
 ; Default installation directory
 InstallDir "$PROGRAMFILES\${APP_NAME}"
 
 ; Registry key to store installation directory
-InstallDirRegKey HKLM "Software\${APP_NAME}" "InstallPath"
-
-; Request application privileges
-RequestExecutionLevel admin
+InstallDirRegKey ${REGISTRY_HIVE} "Software\${APP_NAME}" "InstallPath"
 
 ; Pages
 Page license
@@ -29,7 +37,11 @@ UninstPage instfiles
 LicenseData "..\LICENSE"
 
 ; Output file
-OutFile "..\dist\pyhelloworld-installer.exe"
+!ifdef TEST_MODE
+    OutFile "..\dist\pyhelloworld-test-installer.exe"
+!else
+    OutFile "..\dist\pyhelloworld-installer.exe"
+!endif
 
 ; Language
 
@@ -46,15 +58,15 @@ Section "Main Application" SecMain
     WriteUninstaller "$INSTDIR\Uninstall.exe"
 
     ; Add installation information to registry
-    WriteRegStr HKLM "Software\${APP_NAME}" "InstallPath" "$INSTDIR"
-    WriteRegStr HKLM "Software\${APP_NAME}" "Version" "${APP_VERSION}"
+    WriteRegStr ${REGISTRY_HIVE} "Software\${APP_NAME}" "InstallPath" "$INSTDIR"
+    WriteRegStr ${REGISTRY_HIVE} "Software\${APP_NAME}" "Version" "${APP_VERSION}"
 
     ; Add uninstaller to Add/Remove Programs
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "DisplayName" "${APP_NAME}"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "DisplayVersion" "${APP_VERSION}"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "Publisher" "${APP_PUBLISHER}"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "URLInfoAbout" "${APP_URL}"
+    WriteRegStr ${REGISTRY_HIVE} "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "DisplayName" "${APP_NAME}"
+    WriteRegStr ${REGISTRY_HIVE} "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
+    WriteRegStr ${REGISTRY_HIVE} "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "DisplayVersion" "${APP_VERSION}"
+    WriteRegStr ${REGISTRY_HIVE} "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "Publisher" "${APP_PUBLISHER}"
+    WriteRegStr ${REGISTRY_HIVE} "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "URLInfoAbout" "${APP_URL}"
 
 SectionEnd
 
@@ -80,7 +92,7 @@ Section "Uninstall"
     Delete "$DESKTOP\${APP_NAME}.lnk"
 
     ; Remove registry entries
-    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
-    DeleteRegKey HKLM "Software\${APP_NAME}"
+    DeleteRegKey ${REGISTRY_HIVE} "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
+    DeleteRegKey ${REGISTRY_HIVE} "Software\${APP_NAME}"
 
 SectionEnd

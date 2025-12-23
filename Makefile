@@ -5,7 +5,7 @@ SRCS = src/$(BASE_NAME)/$(BASE_NAME).py
 DATA_FILES = data/*
 CONFIG_FILES = pyproject.toml
 COMPILED_EXE = dist/$(BASE_NAME).exe
-INSTALLER_OUTPUT = dist/$(BASE_NAME)-installer.exe
+INSTALLER_EXE = dist/$(BASE_NAME)-installer.exe
 SPACE = $(empty) $(empty)
 empty =
 
@@ -15,7 +15,7 @@ MAKENSIS_PATH ?=
 # Suppress command echoing for cleaner output
 .SILENT:
 
-.PHONY: help sync sync-all test run lint format typecheck clean build windows-build windows-installer windows-test-installer windows-test-install windows-dev-test windows-status
+.PHONY: help sync sync-all test run lint format typecheck clean build-scripts windows-compile windows-installer windows-run-installer-test windows-test-installed
 
 
 # Default target
@@ -30,13 +30,11 @@ help:
 	@echo "  typecheck      Type check code"
 	@echo "  clean          Clean build artifacts"
 	@echo "  build          Build the package"
-	@echo "  windows-dev-test  Build and test Windows executable with data files"
-	@echo "  windows-build  Build Windows executable with PyInstaller"
-	@echo "  windows-installer  Create Windows installer"
-	@echo "  windows-test-installer  Create test installer (user-level, no UAC)"
-	@echo "  windows-test-install  Install and test Windows application"
-	@echo "  windows-install  Install Windows application to target directory"
-	@echo "  windows-run    Run installed Windows application and verify output"
+	@echo "  windows-compile  Build a Windows executable with PyInstaller"
+	@echo "  windows-test-compiled  Test if compiled exe is runnable"
+	@echo "  windows-installer  Create Windows installer (admin-level, HKLM registry)"
+	@echo "  windows-run-installer-test  Create test installer (user-level, no UAC, HKCU registry)"
+	@echo "  windows-test-installed  Install test installer silently to TEMP directory"
 
 # sync the package and dependencies
 sync:
@@ -71,8 +69,11 @@ typecheck:
 clean:
 	rm -rf build dist *.egg-info
 
+build-scripts:
+	uv build
+
 # Windows build targets implemented directly in Makefile
-windows-build: $(COMPILED_EXE)
+windows-compile: $(COMPILED_EXE)
 
  $(COMPILED_EXE): $(SRCS) $(DATA_FILES) $(CONFIG_FILES)
 	@echo Building $(COMPILED_EXE) - dependencies changed
@@ -84,11 +85,14 @@ windows-build: $(COMPILED_EXE)
 windows-test-compiled: $(COMPILED_EXE)
 	uv run pytest -x -s -v tests/test_compiled.py
 
-windows-build-installer: windows-build
+windows-installer: $(COMPILED_EXE) build-scripts
 	uv run build-installer
 
-windows-test-installer: windows-build
-	uv run build-installer.py --test
+$(INSTALLER_EXE): $(COMPILED_EXE)
+	make windows-installer
 
-windows-test-install:
-	uv run windows-test-install
+windows-run-installer-test: $(COMPILED_EXE) build-scripts
+	uv run build-installer --test
+
+windows-test-installed: windows-run-installer-test
+	uv run pytest -x -s -v tests/test_installed.py

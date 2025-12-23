@@ -7,18 +7,10 @@ import sys
 from pathlib import Path
 
 
-def build_test_installer() -> bool:
+def verify_installer():
     """Build test installer if it doesn't exist."""
     test_installer = Path("dist/pyhelloworld-test-installer.exe")
-    if test_installer.exists():
-        return True
-
-    print("Test installer not found. Building test installer first...")
-    result = subprocess.run(
-        ["uv", "run", "scripts/build-installer.py", "--test"],
-        check=False,
-    )
-    return result.returncode == 0
+    assert test_installer.exists(), f"{test_installer} does not exist"
 
 
 def install_test_installer() -> bool:
@@ -52,42 +44,15 @@ def install_test_installer() -> bool:
     return True
 
 
-def run_tests() -> bool:
-    """Run pytest test for installed executable."""
-    print("Running tests...")
-
-    result = subprocess.run(
-        [
-            "uv",
-            "run",
-            "pytest",
-            "tests/pyhelloworld/test_pyhelloworld.py::test_installed_executable_output",
-            "-x",
-            "-s",
-            "-v",
-        ],
-        check=False,
-    )
-
-    if result.returncode != 0:
-        print("[x] Tests failed")
-        return False
-
-    print("[v] All tests passed")
-    return True
-
-
 def main() -> int:
     print("Running Windows test installation...")
 
-    if not build_test_installer():
-        print("[x] Failed to build test installer")
+    try:
+        verify_installer()
+    except Exception:
         return 1
 
     if not install_test_installer():
-        return 1
-
-    if not run_tests():
         return 1
 
     return 0

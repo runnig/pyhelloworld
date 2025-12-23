@@ -2,6 +2,7 @@ import platform
 import subprocess
 from pathlib import Path
 
+
 def test_compiled() -> None:
     """Test that the PyInstaller-bundled executable outputs 'Hello world'."""
     # Skip on non-Windows platforms

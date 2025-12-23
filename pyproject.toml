@@ -20,6 +20,7 @@ packages = [
 [project.scripts]
 pyhelloworld = "pyhelloworld.pyhelloworld:cli"
 build-installer = "scripts.build_installer:main"
+windows-run-install = "scripts.windows_test_install:main"
 windows-test-install = "scripts.windows_test_install:main"
 
 
