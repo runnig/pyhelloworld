@@ -11,7 +11,7 @@ uv venv
 # activate virtual environment
 .venv\Scripts\activate.bat
 
-# install dependencies
+# install all Python dependencies
 make sync-all
 ```
 
