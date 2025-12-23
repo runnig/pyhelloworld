@@ -4,7 +4,7 @@ SPEC_FILE = $(BASE_NAME).spec
 SRCS = src/$(BASE_NAME)/$(BASE_NAME).py
 DATA_FILES = data/*
 CONFIG_FILES = pyproject.toml
-PYINSTALLER_OUTPUT_EXE = dist/$(BASE_NAME).exe
+COMPILED_EXE = dist/$(BASE_NAME).exe
 INSTALLER_OUTPUT = dist/$(BASE_NAME)-installer.exe
 SPACE = $(empty) $(empty)
 empty =
@@ -15,7 +15,7 @@ MAKENSIS_PATH ?=
 # Suppress command echoing for cleaner output
 .SILENT:
 
-.PHONY: help sync sync-all test run lint format typecheck clean build windows-build windows-installer windows-test-install windows-dev-test windows-status
+.PHONY: help sync sync-all test run lint format typecheck clean build windows-build windows-installer windows-test-installer windows-test-install windows-dev-test windows-status
 
 
 # Default target
@@ -33,6 +33,7 @@ help:
 	@echo "  windows-dev-test  Build and test Windows executable with data files"
 	@echo "  windows-build  Build Windows executable with PyInstaller"
 	@echo "  windows-installer  Create Windows installer"
+	@echo "  windows-test-installer  Create test installer (user-level, no UAC)"
 	@echo "  windows-test-install  Install and test Windows application"
 	@echo "  windows-install  Install Windows application to target directory"
 	@echo "  windows-run    Run installed Windows application and verify output"
@@ -71,25 +72,23 @@ clean:
 	rm -rf build dist *.egg-info
 
 # Windows build targets implemented directly in Makefile
-windows-build: $(PYINSTALLER_OUTPUT_EXE)
+windows-build: $(COMPILED_EXE)
 
- $(PYINSTALLER_OUTPUT_EXE): $(SRCS) $(DATA_FILES) $(CONFIG_FILES)
-	@echo Building $(PYINSTALLER_OUTPUT_EXE) - dependencies changed
+ $(COMPILED_EXE): $(SRCS) $(DATA_FILES) $(CONFIG_FILES)
+	@echo Building $(COMPILED_EXE) - dependencies changed
 	uv run pyinstaller "$(SPEC_FILE)" --clean
-	@powershell.exe -Command "if (!(Test-Path '$(PYINSTALLER_OUTPUT_EXE)')) { Write-Host 'Error: Build failed - executable not found at $(PYINSTALLER_OUTPUT_EXE)'; exit 1 }"
-	@echo Build completed successfully: $(PYINSTALLER_OUTPUT_EXE)
+	@powershell.exe -Command "if (!(Test-Path '$(COMPILED_EXE)')) { Write-Host 'Error: Build failed - executable not found at $(COMPILED_EXE)'; exit 1 }"
+	@echo Build completed successfully: $(COMPILED_EXE)
 
 # Test bundled executable with data files
-windows-test: $(PYINSTALLER_OUTPUT_EXE)
-	uv run pytest -x -s -v tests\pyhelloworld\test_pyhelloworld.py
+windows-test-compiled: $(COMPILED_EXE)
+	uv run pytest -x -s -v tests/test_compiled.py
 
-windows-installer: windows-build
-	@if defined MAKENSIS_PATH (
-		setlocal enableDelayedExpansion
-		powershell.exe -ExecutionPolicy Bypass -Command "$env:MAKENSIS_PATH='!MAKENSIS_PATH!'; .\build.ps1 windows-installer"
-	) else (
-		powershell.exe -ExecutionPolicy Bypass -File build.ps1 windows-installer
-	)
+windows-build-installer: windows-build
+	uv run build-installer
 
-windows-test-install: $(INSTALLER_OUTPUT)
-	@powershell.exe -ExecutionPolicy Bypass -File build.ps1 windows-test-install
+windows-test-installer: windows-build
+	uv run build-installer.py --test
+
+windows-test-install:
+	uv run windows-test-install

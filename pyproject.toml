@@ -12,10 +12,15 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/pyhelloworld"]
+packages = [
+    "scripts",
+    "src/pyhelloworld",
+]
 
 [project.scripts]
 pyhelloworld = "pyhelloworld.pyhelloworld:cli"
+build-installer = "scripts.build_installer:main"
+windows-test-install = "scripts.windows_test_install:main"
 
 
 [dependency-groups]
